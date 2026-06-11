@@ -47,9 +47,9 @@ void setup() {
   Serial.println("tft.init() OK");
 
   // === 演示 ===
-  tft.fillScreen(TFT_RED);    delay(1000);
-  tft.fillScreen(TFT_GREEN);  delay(1000);
-  tft.fillScreen(TFT_BLUE);   delay(1000);
+  tft.fillScreen(TFT_RED);    delay(1500);
+  tft.fillScreen(TFT_GREEN);  delay(1500);
+  tft.fillScreen(TFT_BLUE);   delay(1500);
   tft.fillScreen(TFT_BLACK);  delay(500);
 
   // 彩色图形
@@ -59,7 +59,7 @@ void setup() {
   tft.fillRect(130, 90, 100, 60, TFT_YELLOW);
   tft.fillCircle(60, 200, 25, TFT_MAGENTA);
   tft.fillCircle(180, 200, 25, TFT_CYAN);
-  delay(2000);
+  delay(3000);
 
   // 文字
   tft.fillScreen(TFT_BLACK);
@@ -71,7 +71,7 @@ void setup() {
   tft.drawString("ST7789 240x240", 20, 96, 2);
   tft.setTextColor(TFT_YELLOW, TFT_BLACK);
   tft.drawString("USE_HSPI_PORT fix", 20, 130, 2);
-  delay(2000);
+  delay(3000);
 
   // 系统信息
   tft.fillScreen(TFT_BLACK);
@@ -83,7 +83,7 @@ void setup() {
   tft.drawString("PSRAM: " + String(ESP.getPsramSize()/1024/1024) + " MB", 20, 108, 2);
   tft.drawString("Flash: " + String(ESP.getFlashChipSize()/(1024*1024)) + " MB", 20, 130, 2);
   tft.drawString("MAC: " + WiFi.macAddress(), 20, 160, 2);
-  delay(3000);
+  delay(5000);
 
   Serial.println("Setup complete, entering loop...");
 }
