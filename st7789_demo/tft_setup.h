@@ -1,10 +1,10 @@
-// tft_setup.h — 适用于 Goouuu Tech ESP32-S3N15R8 + ST7789
+// tft_setup.h — 适用于 Goouuu Tech ESP32-S3N16R8 + ST7789
 //
 // 此文件放在 .ino 同目录下，TFT_eSPI 编译时会自动识别并加载。
 // 关键: ESP32-S3 必须用 USE_HSPI_PORT，否则和 Flash 冲突导致崩溃。
 // ============================================================
 
-#define USER_SETUP_INFO "ESP32-S3N15R8 + ST7789"
+#define USER_SETUP_INFO "ESP32-S3N16R8 + ST7789"
 
 // ---------- 显示屏驱动 ----------
 #define ST7789_DRIVER

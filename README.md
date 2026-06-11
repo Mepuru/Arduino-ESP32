@@ -1,6 +1,6 @@
 # Arduino ESP32 Projects
 
-Goouuu Tech ESP32-S3N15R8 开发板系列项目。
+Goouuu Tech ESP32-S3N16R8 开发板系列项目。
 
 ---
 
