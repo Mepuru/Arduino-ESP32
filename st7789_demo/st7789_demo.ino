@@ -40,29 +40,65 @@ static const int rainbowLen = sizeof(rainbow) / sizeof(rainbow[0]);
 
 void setup() {
   Serial.begin(115200);
-  delay(500);  // 等待串口就绪
-  Serial.println("\nESP32-S3 + ST7789 Demo Starting...");
+  delay(1000);
+  Serial.println("\n========== ESP32-S3 + ST7789 ==========");
 
-  // 开背光
+  // 打印引脚配置，确认 tft_setup.h 是否生效
+  Serial.println("--- Pin Config ---");
+  Serial.printf("TFT_CS=%d, TFT_DC=%d, TFT_RST=%d\n", TFT_CS, TFT_DC, TFT_RST);
+  Serial.printf("TFT_MOSI=%d, TFT_SCLK=%d, TFT_BL=%d\n", TFT_MOSI, TFT_SCLK, TFT_BL);
+
+  // 背光
   pinMode(TFT_BL, OUTPUT);
   digitalWrite(TFT_BL, HIGH);
+  Serial.println("Backlight ON");
 
-  // 初始化屏幕
-  tft.init();
-  tft.setRotation(1);      // 0/1/2/3 四个方向，根据安装方向调整
+  // 手动复位屏幕（有些模组需要 MCU 控制 RST）
+  Serial.println("Resetting display...");
+  pinMode(TFT_RST, OUTPUT);
+  digitalWrite(TFT_RST, LOW);
+  delay(10);
+  digitalWrite(TFT_RST, HIGH);
+  delay(120);
+  Serial.println("RST toggled");
+
+  // 初始化屏幕 — 显式指定分辨率
+  Serial.println("Calling tft.init(240, 240)...");
+  tft.init(240, 240);
+  Serial.println("tft.init() done");
+
+  tft.setRotation(1);
+  Serial.println("Rotation set");
+
+  // 先做一个纯色填充验证基本通信
+  Serial.println("Filling screen RED...");
+  tft.fillScreen(TFT_RED);
+  delay(2000);
+
+  Serial.println("Filling screen GREEN...");
+  tft.fillScreen(TFT_GREEN);
+  delay(2000);
+
+  Serial.println("Filling screen BLUE...");
+  tft.fillScreen(TFT_BLUE);
+  delay(2000);
+
   tft.fillScreen(TFT_BLACK);
+  Serial.println("--- Startup done, starting demo ---\n");
 
-  // --- 依次播放演示段落 ---
-  demoStartup();           // 启动动画
+  // --- 演示段落 ---
+  demoStartup();
   delay(1500);
-  demoShapes();            // 图形展示
+  demoShapes();
   delay(1500);
-  demoText();              // 文字展示
+  demoText();
   delay(1500);
-  demoRainbowCircles();    // 彩虹圈动画
+  demoRainbowCircles();
   delay(1500);
-  demoBouncingBall();      // 弹球动画
+  demoBouncingBall();
   delay(500);
+
+  Serial.println("Demo cycle complete, entering loop...");
 }
 
 // ======================== LOOP ========================
