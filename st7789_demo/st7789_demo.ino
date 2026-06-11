@@ -1,6 +1,5 @@
 /*
  * ESP32-S3 + ST7789 — 纯原生 SPI 驱动
- * 不依赖 TFT_eSPI 或其他第三方库
  */
 #include <SPI.h>
 
@@ -20,12 +19,31 @@
 #define MAGENTA 0xF81F
 #define YELLOW  0xFFE0
 
-static void dc(uint8_t v) { digitalWrite(DC, v); }
-static void cs(uint8_t v) { digitalWrite(CS, v); }
+static SPISettings spiSettings(20000000, MSBFIRST, SPI_MODE0);
 
-static void wcmd(uint8_t c) { dc(0); cs(0); SPI.write(c); cs(1); }
-static void wdat(uint8_t d) { dc(1); cs(0); SPI.write(d); cs(1); }
-static void w16(uint16_t d) { dc(1); cs(0); SPI.write16(d); cs(1); }
+static void spi_start()  { SPI.beginTransaction(spiSettings); }
+static void spi_end()    { SPI.endTransaction(); }
+
+static void wcmd(uint8_t c) {
+  digitalWrite(DC, LOW);
+  digitalWrite(CS, LOW);
+  SPI.write(c);
+  digitalWrite(CS, HIGH);
+}
+
+static void wdat(uint8_t d) {
+  digitalWrite(DC, HIGH);
+  digitalWrite(CS, LOW);
+  SPI.write(d);
+  digitalWrite(CS, HIGH);
+}
+
+static void w16(uint16_t d) {
+  digitalWrite(DC, HIGH);
+  digitalWrite(CS, LOW);
+  SPI.write16(d);
+  digitalWrite(CS, HIGH);
+}
 
 void st7789_init() {
   pinMode(CS, OUTPUT); pinMode(DC, OUTPUT);
@@ -49,18 +67,26 @@ void set_win(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
 }
 
 void fill(uint16_t c) {
+  spi_start();
   set_win(0, 0, 239, 239);
-  dc(1); cs(0);
+  wcmd(0x2C);
+  digitalWrite(DC, HIGH);
+  digitalWrite(CS, LOW);
   for (int i = 0; i < 240 * 240; i++) SPI.write16(c);
-  cs(1);
+  digitalWrite(CS, HIGH);
+  spi_end();
 }
 
 void fill_rect(int x, int y, int w, int h, uint16_t c) {
   if (w <= 0 || h <= 0) return;
+  spi_start();
   set_win(x, y, x + w - 1, y + h - 1);
-  dc(1); cs(0);
+  wcmd(0x2C);
+  digitalWrite(DC, HIGH);
+  digitalWrite(CS, LOW);
   for (int i = 0; i < w * h; i++) SPI.write16(c);
-  cs(1);
+  digitalWrite(CS, HIGH);
+  spi_end();
 }
 
 void setup() {
@@ -80,21 +106,18 @@ void setup() {
   Serial.println("BLUE...");
   fill(BLUE);   delay(2000);
 
-  Serial.println("Color bars...");
-  fill_rect(0, 0, 240, 60, RED);
-  fill_rect(0, 60, 240, 60, GREEN);
-  fill_rect(0, 120, 240, 60, BLUE);
-  fill_rect(0, 180, 240, 60, YELLOW);
-  delay(2000);
+  Serial.println("Cyan...");
+  fill(CYAN);   delay(1500);
 
-  Serial.println("Checkerboard...");
-  fill(BLACK);
-  for (int y = 0; y < 240; y += 30) {
-    for (int x = 0; x < 240; x += 30) {
-      if ((x / 30 + y / 30) % 2 == 0)
-        fill_rect(x, y, 28, 28, WHITE);
-    }
-  }
+  Serial.println("White...");
+  fill(WHITE);  delay(1500);
+
+  Serial.println("Bars...");
+  fill_rect(0, 0, 240, 48, RED);
+  fill_rect(0, 48, 240, 48, GREEN);
+  fill_rect(0, 96, 240, 48, BLUE);
+  fill_rect(0, 144, 240, 48, YELLOW);
+  fill_rect(0, 192, 240, 48, MAGENTA);
   delay(2000);
 
   Serial.println("Setup complete");
