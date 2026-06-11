@@ -17,12 +17,11 @@
  *
  * 安装 Arduino 库 (库管理器搜索安装):
  *   1. TFT_eSPI by Bodmer
- *   2. 将本仓库的 User_Setup.h 复制到
- *      libraries/TFT_eSPI/User_Setup.h (覆盖)
  */
 
 #include <TFT_eSPI.h>
 #include <SPI.h>
+#include <WiFi.h>
 
 TFT_eSPI tft = TFT_eSPI();
 
