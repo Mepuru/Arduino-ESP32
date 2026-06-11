@@ -1,103 +1,111 @@
 /*
- * ESP32-S3 + ST7789 — 混合驱动
- * SPI 初始化和屏幕初始化用手动方式（已验证可行）
- * 图形绘制用 TFT_eSPI（跳过它的 init() 崩溃）
+ * ESP32-S3 + ST7789 — 纯原生 SPI 驱动
+ * 不依赖 TFT_eSPI 或其他第三方库
  */
-#include <TFT_eSPI.h>
 #include <SPI.h>
 
-TFT_eSPI tft = TFT_eSPI();
+#define CS   10
+#define DC   5
+#define RST  6
+#define MOSI 11
+#define SCLK 12
+#define BL   21
 
-// === 手动 SPI 命令函数（绕开 TFT_eSPI 的 init）===
-static void raw_cmd(uint8_t c) {
-  digitalWrite(TFT_DC, LOW);
-  digitalWrite(TFT_CS, LOW);
-  SPI.write(c);
-  while (SPI.getClockDivider());
-  digitalWrite(TFT_CS, HIGH);
+#define BLACK   0x0000
+#define RED     0xF800
+#define GREEN   0x07E0
+#define BLUE    0x001F
+#define WHITE   0xFFFF
+#define CYAN    0x07FF
+#define MAGENTA 0xF81F
+#define YELLOW  0xFFE0
+
+static void dc(uint8_t v) { digitalWrite(DC, v); }
+static void cs(uint8_t v) { digitalWrite(CS, v); }
+
+static void wcmd(uint8_t c) { dc(0); cs(0); SPI.write(c); cs(1); }
+static void wdat(uint8_t d) { dc(1); cs(0); SPI.write(d); cs(1); }
+static void w16(uint16_t d) { dc(1); cs(0); SPI.write16(d); cs(1); }
+
+void st7789_init() {
+  pinMode(CS, OUTPUT); pinMode(DC, OUTPUT);
+  pinMode(RST, OUTPUT); pinMode(BL, OUTPUT);
+  digitalWrite(BL, 1); digitalWrite(CS, 1); digitalWrite(DC, 1);
+  digitalWrite(RST, 0); delay(10); digitalWrite(RST, 1); delay(120);
+  SPI.begin(SCLK, -1, MOSI, CS);
+
+  wcmd(0x01); delay(150);
+  wcmd(0x11); delay(150);
+  wcmd(0x36); wdat(0);
+  wcmd(0x3A); wdat(0x55);
+  wcmd(0x21); delay(10);
+  wcmd(0x13); delay(10);
+  wcmd(0x29); delay(10);
 }
 
-static void raw_data(uint8_t d) {
-  digitalWrite(TFT_DC, HIGH);
-  digitalWrite(TFT_CS, LOW);
-  SPI.write(d);
-  while (SPI.getClockDivider());
-  digitalWrite(TFT_CS, HIGH);
+void set_win(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
+  wcmd(0x2A); w16(x0); w16(x1);
+  wcmd(0x2B); w16(y0); w16(y1);
 }
 
-static void raw_data16(uint16_t d) {
-  digitalWrite(TFT_DC, HIGH);
-  digitalWrite(TFT_CS, LOW);
-  SPI.write16(d);
-  while (SPI.getClockDivider());
-  digitalWrite(TFT_CS, HIGH);
+void fill(uint16_t c) {
+  set_win(0, 0, 239, 239);
+  dc(1); cs(0);
+  for (int i = 0; i < 240 * 240; i++) SPI.write16(c);
+  cs(1);
 }
 
-// === 手动初始化 ST7789（已验证可行）===
-void manual_st7789_init() {
-  pinMode(TFT_RST, OUTPUT);
-  pinMode(TFT_DC, OUTPUT);
-  pinMode(TFT_CS, OUTPUT);
-  pinMode(TFT_BL, OUTPUT);
-
-  digitalWrite(TFT_BL, HIGH);
-  digitalWrite(TFT_CS, HIGH);
-  digitalWrite(TFT_DC, HIGH);
-
-  // Reset
-  digitalWrite(TFT_RST, LOW);
-  delay(10);
-  digitalWrite(TFT_RST, HIGH);
-  delay(120);
-
-  // ST7789 init sequence
-  SPI.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, TFT_CS);
-
-  raw_cmd(0x01);  delay(150);  // SWRESET
-  raw_cmd(0x11);  delay(150);  // SLPOUT
-  raw_cmd(0x36);  raw_data(0x00);  // MADCTL
-  raw_cmd(0x3A);  raw_data(0x55);  // COLMOD (16-bit)
-  raw_cmd(0x13);  delay(10);      // NORON
-  raw_cmd(0x29);  delay(10);      // DISPON
-
-  Serial.println("Manual ST7789 init done");
+void fill_rect(int x, int y, int w, int h, uint16_t c) {
+  if (w <= 0 || h <= 0) return;
+  set_win(x, y, x + w - 1, y + h - 1);
+  dc(1); cs(0);
+  for (int i = 0; i < w * h; i++) SPI.write16(c);
+  cs(1);
 }
 
 void setup() {
   Serial.begin(115200);
   delay(1500);
-  Serial.println("\n=== Starting ===\n");
+  Serial.println("Starting...");
 
-  manual_st7789_init();
+  st7789_init();
+  Serial.println("LCD init OK");
 
-  // 现在用 TFT_eSPI 画图（不调用 tft.init()）
-  Serial.println("Drawing with TFT_eSPI...");
+  fill(RED);    delay(600);
+  fill(GREEN);  delay(600);
+  fill(BLUE);   delay(600);
+  fill(BLACK);  delay(300);
 
-  tft.fillScreen(TFT_RED);
+  // 色条
+  fill_rect(0, 0, 240, 20, RED);
+  fill_rect(0, 30, 240, 20, GREEN);
+  fill_rect(0, 60, 240, 20, BLUE);
+  fill_rect(0, 90, 240, 20, YELLOW);
+  fill_rect(0, 120, 240, 20, CYAN);
+  fill_rect(0, 150, 240, 20, MAGENTA);
+
   delay(1000);
-
-  tft.fillScreen(TFT_GREEN);
-  delay(1000);
-
-  tft.fillScreen(TFT_BLUE);
-  delay(1000);
-
-  tft.fillScreen(TFT_BLACK);
-  delay(500);
-
-  // Demo
-  tft.setRotation(1);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawCentreString("ESP32-S3 + ST7789", 120, 80, 4);
-  tft.drawCentreString("Manual init works!", 120, 120, 2);
-  tft.drawCentreString("TFT_eSPI drawing OK", 120, 150, 2);
-
+  fill(BLACK);
   Serial.println("Setup complete");
 }
 
+// 弹球动画
+int bx = 50, by = 100, bdx = 2, bdy = 2;
+int phase = 0;
+
 void loop() {
-  static unsigned long t = 0;
-  t++;
-  tft.drawPixel(random(240), random(240), random(65536));
-  delay(10);
+  // 擦除旧球
+  fill_rect(bx, by, 10, 10, BLACK);
+
+  bx += bdx; by += bdy;
+  if (bx <= 0 || bx >= 230) bdx = -bdx;
+  if (by <= 0 || by >= 230) bdy = -bdy;
+
+  // 画新球
+  uint16_t colors[] = {RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA};
+  fill_rect(bx, by, 10, 10, colors[(phase / 20) % 6]);
+
+  // 底部状态文字（用色块拼简单形状）
+  phase++;
+  delay(16);
 }
