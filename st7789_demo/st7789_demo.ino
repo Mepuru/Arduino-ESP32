@@ -71,41 +71,35 @@ void setup() {
   st7789_init();
   Serial.println("LCD init OK");
 
-  fill(RED);    delay(600);
-  fill(GREEN);  delay(600);
-  fill(BLUE);   delay(600);
-  fill(BLACK);  delay(300);
+  Serial.println("RED...");
+  fill(RED);    delay(2000);
 
-  // 色条
-  fill_rect(0, 0, 240, 20, RED);
-  fill_rect(0, 30, 240, 20, GREEN);
-  fill_rect(0, 60, 240, 20, BLUE);
-  fill_rect(0, 90, 240, 20, YELLOW);
-  fill_rect(0, 120, 240, 20, CYAN);
-  fill_rect(0, 150, 240, 20, MAGENTA);
+  Serial.println("GREEN...");
+  fill(GREEN);  delay(2000);
 
-  delay(1000);
+  Serial.println("BLUE...");
+  fill(BLUE);   delay(2000);
+
+  Serial.println("Color bars...");
+  fill_rect(0, 0, 240, 60, RED);
+  fill_rect(0, 60, 240, 60, GREEN);
+  fill_rect(0, 120, 240, 60, BLUE);
+  fill_rect(0, 180, 240, 60, YELLOW);
+  delay(2000);
+
+  Serial.println("Checkerboard...");
   fill(BLACK);
+  for (int y = 0; y < 240; y += 30) {
+    for (int x = 0; x < 240; x += 30) {
+      if ((x / 30 + y / 30) % 2 == 0)
+        fill_rect(x, y, 28, 28, WHITE);
+    }
+  }
+  delay(2000);
+
   Serial.println("Setup complete");
 }
 
-// 弹球动画
-int bx = 50, by = 100, bdx = 2, bdy = 2;
-int phase = 0;
-
 void loop() {
-  // 擦除旧球
-  fill_rect(bx, by, 10, 10, BLACK);
-
-  bx += bdx; by += bdy;
-  if (bx <= 0 || bx >= 230) bdx = -bdx;
-  if (by <= 0 || by >= 230) bdy = -bdy;
-
-  // 画新球
-  uint16_t colors[] = {RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA};
-  fill_rect(bx, by, 10, 10, colors[(phase / 20) % 6]);
-
-  // 底部状态文字（用色块拼简单形状）
-  phase++;
-  delay(16);
+  delay(10000);
 }
