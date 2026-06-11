@@ -76,20 +76,23 @@ void setup() {
   // 系统信息
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.setCursor(20, 20); tft.setTextFont(2);
-  tft.println("Chip: " + String(ESP.getChipModel()));
-  tft.println("Rev: v" + String(ESP.getChipRevision()));
-  tft.println("Cores: " + String(ESP.getChipCores()));
-  tft.println("Free Heap: " + String(ESP.getFreeHeap()/1024) + " KB");
-  tft.println("PSRAM: " + String(ESP.getPsramSize()/1024/1024) + " MB");
-  tft.setTextFont(1);
-  tft.print("MAC: " + WiFi.macAddress());
-  delay(4000);
+  tft.drawString("Chip: " + String(ESP.getChipModel()), 20, 20, 2);
+  tft.drawString("Rev: v" + String(ESP.getChipRevision()), 20, 42, 2);
+  tft.drawString("Cores: " + String(ESP.getChipCores()), 20, 64, 2);
+  tft.drawString("Free Heap: " + String(ESP.getFreeHeap()/1024) + " KB", 20, 86, 2);
+  tft.drawString("PSRAM: " + String(ESP.getPsramSize()/1024/1024) + " MB", 20, 108, 2);
+  tft.drawString("Flash: " + String(ESP.getFlashChipSize()/(1024*1024)) + " MB", 20, 130, 2);
+  tft.drawString("MAC: " + WiFi.macAddress(), 20, 160, 2);
+  delay(3000);
 
   Serial.println("Setup complete, entering loop...");
 }
 
 void loop() {
+  // 首次进入 loop 时清屏
+  static bool first = true;
+  if (first) { tft.fillScreen(TFT_BLACK); first = false; }
+
   static int bx = 10, by = 10, dx = 2, dy = 3;
   static int ci = 0;
 

@@ -37,4 +37,11 @@
 #define TFT_RGB_ORDER TFT_RGB
 
 // ---------- 字体 ----------
-#define SMOOTH_FONT
+#define LOAD_GLCD    // Font 1 (8px, 默认)
+#define LOAD_FONT2   // Font 2 (16px)
+#define LOAD_FONT4   // Font 4 (26px)
+#define LOAD_FONT6   // Font 6 (48px 数字)
+#define LOAD_FONT7   // Font 7 (48px 七段数码管)
+#define LOAD_FONT8   // Font 8 (75px 数字)
+#define LOAD_GFXFF   // Adafruit FreeFonts
+#define SMOOTH_FONT  // 平滑字体渲染
