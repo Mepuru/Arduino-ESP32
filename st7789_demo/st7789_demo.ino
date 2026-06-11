@@ -18,6 +18,7 @@
 
 #include <TFT_eSPI.h>
 #include <SPI.h>
+#include <WiFi.h>
 
 TFT_eSPI tft = TFT_eSPI();
 
