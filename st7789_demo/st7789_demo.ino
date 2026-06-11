@@ -8,11 +8,11 @@
  *   ST7789 →  ESP32-S3
  *   VCC    →  3.3V
  *   GND    →  GND
- *   CS     →  GPIO34  (FSPICS0)
- *   DC     →  GPIO7
+ *   CS     →  GPIO10  (FSPICS0)
+ *   DC     →  GPIO5
  *   RST    →  GPIO6
- *   SCL    →  GPIO36  (FSPICLK)
- *   SDA    →  GPIO35  (FSPID)
+ *   SCL    →  GPIO12  (FSPICLK)
+ *   SDA    →  GPIO11  (FSPID)
  *   BL     →  GPIO21
  */
 
