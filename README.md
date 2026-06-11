@@ -38,15 +38,12 @@ https://espressif.github.io/arduino-esp32/package_esp32_index.json
 
 **工具 → 管理库** → 搜索 `TFT_eSPI` → 安装 **TFT_eSPI by Bodmer**
 
-### 4. 配置引脚
+### 4. 完成 — 无需额外配置
 
-将项目中的 [`st7789_demo/User_Setup.h`](st7789_demo/User_Setup.h) 复制到库目录覆盖默认配置：
+项目里已经自带了 [`tft_setup.h`](st7789_demo/tft_setup.h)，放在 `.ino` 同目录下。
+TFT_eSPI 编译时会自动检测并加载它，**完全不需要动全局库文件**。
 
-```
-<Arduino>/libraries/TFT_eSPI/User_Setup.h
-```
-
-> 建议先备份原有 `User_Setup.h`。
+> 💡 原理：`TFT_eSPI.h` 第 59 行用 `__has_include(<tft_setup.h>)` 检测草图目录下的配置文件，优先级高于全局 `User_Setup.h`。
 
 ## 接线图
 
@@ -71,7 +68,7 @@ Arduino-ESP32-Demo/
 ├── README.md
 └── st7789_demo/            ← Arduino 草稿文件夹
     ├── st7789_demo.ino     ← 主程序
-    └── User_Setup.h        ← TFT_eSPI 引脚配置（需复制到库目录）
+    └── tft_setup.h         ← TFT_eSPI 引脚配置（项目本地，无需全局）
 ```
 
 ## 演示内容
@@ -93,5 +90,5 @@ Arduino-ESP32-Demo/
 | 白屏/无显示 | 背光未开 | 检查 BL 引脚，或确认 `TFT_BL` 定义 |
 | 显示错乱 | 引脚配置不对 | 核对 `User_Setup.h` 中的 GPIO 定义 |
 | 颜色不对 | 屏幕初始化时序/旋转 | 尝试 `tft.setRotation(0..3)` |
-| 编译报错 TFT_eSPI | 缺少 User_Setup.h | 按上方步骤复制配置文件 |
+| 编译报错 "tft_setup.h" 未找到 | `tft_setup.h` 不在草图目录 | 确认它与 `.ino` 在同一文件夹 |
 | 上传失败 | 启动模式/端口错误 | 按住 BOOT 键再点上传，或检查端口设置 |

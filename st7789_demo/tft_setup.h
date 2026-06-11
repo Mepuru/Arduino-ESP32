@@ -1,14 +1,8 @@
-// User_Setup.h — 适用于 Goouuu Tech ESP32-S3N15R8 + ST7789
+// tft_setup.h — 适用于 Goouuu Tech ESP32-S3N15R8 + ST7789
 //
-// 使用说明:
-//   安装 TFT_eSPI 库后，将此文件复制到 Arduino 的 TFT_eSPI 库目录下
-//   覆盖原有的 User_Setup.h:
-//     <Arduino>/libraries/TFT_eSPI/User_Setup.h
-//
-//   或者在 TFT_eSPI 库的 User_Setup_Select.h 中取消对应注释
-//   并#include 此文件的路径。
-//
-//   若不想覆盖，可将备份的 User_Setup.h 重命名保留。
+// 此文件放在 .ino 同目录下，TFT_eSPI 库编译时会自动识别并加载，
+// 无需修改全局库文件。
+// 原理: TFT_eSPI.h 通过 __has_include(<tft_setup.h>) 自动检测。
 // ============================================================
 
 #define USER_SETUP_INFO "ESP32-S3N15R8 + ST7789"
