@@ -62,9 +62,9 @@ void setup() {
   delay(120);
   Serial.println("RST toggled");
 
-  // 初始化屏幕 — 显式指定分辨率
-  Serial.println("Calling tft.init(240, 240)...");
-  tft.init(240, 240);
+  // 初始化屏幕（分辨率由 tft_setup.h 的 TFT_WIDTH/TFT_HEIGHT 决定）
+  Serial.println("Calling tft.init()...");
+  tft.init();
   Serial.println("tft.init() done");
 
   tft.setRotation(1);
