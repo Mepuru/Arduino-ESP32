@@ -26,15 +26,25 @@
 #define TFT_MISO -1      // MISO 未使用
 
 // ---------- 背光引脚 ----------
-#define TFT_BL   45      // 背光控制 (如不需要 PWM 调光，可注释掉)
+#define TFT_BL   45      // 背光控制
+
+// ---------- SPI 控制器 ----------
+// 0 = FSPI (SPI2, 与 Flash 共用总线), 1 = HSPI (SPI3, 独立)
+#define TFT_SPI_PORT 1
 
 // ---------- SPI 速率 ----------
-#define SPI_FREQUENCY         40000000   // 40MHz
-#define SPI_READ_FREQUENCY    20000000   // 20MHz
+#define SPI_FREQUENCY         27000000   // 27MHz（降速提高稳定性）
+#define SPI_READ_FREQUENCY    10000000   // 10MHz
+
+// ---------- 颜色顺序 ----------
+#define TFT_RGB_ORDER TFT_RGB
+
+// ---------- 初始化序列 ----------
+// 某些 ST7789 模组需要备选初始化序列
+#define INIT_SEQUENCE_3
 
 // ---------- 旋转方向 (0/1/2/3) ----------
-// 可在代码 tft.setRotation(n) 动态设置，此处不固定
-// #define TFT_ROTATION 1
+// 可在代码 tft.setRotation(n) 动态设置
 
 // ---------- 字体支持 ----------
 #define SMOOTH_FONT
