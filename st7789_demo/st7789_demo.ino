@@ -76,13 +76,15 @@ void setup() {
   // 系统信息
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("Chip: " + String(ESP.getChipModel()), 20, 20, 2);
-  tft.drawString("Cores: " + String(ESP.getChipCores()), 20, 45, 2);
-  tft.drawString("Heap: " + String(ESP.getFreeHeap()/1024) + " KB", 20, 70, 2);
-  tft.drawString("PSRAM: " + String(ESP.getPsramSize()/1024/1024) + " MB", 20, 95, 2);
-  tft.drawString("Flash: " + String(ESP.getFlashChipSize()/1024/1024) + " MB", 20, 120, 2);
-  tft.drawString("MAC: " + WiFi.macAddress(), 20, 145, 1);
-  delay(3000);
+  tft.setCursor(20, 20); tft.setTextFont(2);
+  tft.println("Chip: " + String(ESP.getChipModel()));
+  tft.println("Rev: v" + String(ESP.getChipRevision()));
+  tft.println("Cores: " + String(ESP.getChipCores()));
+  tft.println("Free Heap: " + String(ESP.getFreeHeap()/1024) + " KB");
+  tft.println("PSRAM: " + String(ESP.getPsramSize()/1024/1024) + " MB");
+  tft.setTextFont(1);
+  tft.print("MAC: " + WiFi.macAddress());
+  delay(4000);
 
   Serial.println("Setup complete, entering loop...");
 }
