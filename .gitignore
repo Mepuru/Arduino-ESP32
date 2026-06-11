@@ -21,3 +21,6 @@ build/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Project-specific sensitive config
+**/config.h
