@@ -1,157 +1,103 @@
 /*
- * ESP32-S3 + ST7789 Display Demo
- * 硬件: Goouuu Tech ESP32-S3N15R8
- * 屏幕: ST7789 240x240 SPI TFT LCD
- * 库:   TFT_eSPI (by Bodmer)
- *
- * 接线:
- *   ST7789 →  ESP32-S3
- *   VCC    →  3.3V
- *   GND    →  GND
- *   CS     →  GPIO10  (FSPICS0)
- *   DC     →  GPIO5
- *   RST    →  GPIO6
- *   SCL    →  GPIO12  (FSPICLK)
- *   SDA    →  GPIO11  (FSPID)
- *   BL     →  GPIO21
+ * ESP32-S3 + ST7789 — 混合驱动
+ * SPI 初始化和屏幕初始化用手动方式（已验证可行）
+ * 图形绘制用 TFT_eSPI（跳过它的 init() 崩溃）
  */
-
 #include <TFT_eSPI.h>
 #include <SPI.h>
-#include <WiFi.h>
 
 TFT_eSPI tft = TFT_eSPI();
 
-static const uint16_t rainbow[] = {
-  TFT_RED, TFT_ORANGE, TFT_YELLOW, TFT_GREEN,
-  TFT_CYAN, TFT_BLUE, TFT_MAGENTA
-};
-static const int rainbowLen = sizeof(rainbow) / sizeof(rainbow[0]);
+// === 手动 SPI 命令函数（绕开 TFT_eSPI 的 init）===
+static void raw_cmd(uint8_t c) {
+  digitalWrite(TFT_DC, LOW);
+  digitalWrite(TFT_CS, LOW);
+  SPI.write(c);
+  while (SPI.getClockDivider());
+  digitalWrite(TFT_CS, HIGH);
+}
 
-void setup() {
-  Serial.begin(115200);
-  delay(1000);
-  Serial.println("\nStarting...");
+static void raw_data(uint8_t d) {
+  digitalWrite(TFT_DC, HIGH);
+  digitalWrite(TFT_CS, LOW);
+  SPI.write(d);
+  while (SPI.getClockDivider());
+  digitalWrite(TFT_CS, HIGH);
+}
 
-  pinMode(TFT_BL, OUTPUT);
-  digitalWrite(TFT_BL, HIGH);
+static void raw_data16(uint16_t d) {
+  digitalWrite(TFT_DC, HIGH);
+  digitalWrite(TFT_CS, LOW);
+  SPI.write16(d);
+  while (SPI.getClockDivider());
+  digitalWrite(TFT_CS, HIGH);
+}
 
+// === 手动初始化 ST7789（已验证可行）===
+void manual_st7789_init() {
   pinMode(TFT_RST, OUTPUT);
+  pinMode(TFT_DC, OUTPUT);
+  pinMode(TFT_CS, OUTPUT);
+  pinMode(TFT_BL, OUTPUT);
+
+  digitalWrite(TFT_BL, HIGH);
+  digitalWrite(TFT_CS, HIGH);
+  digitalWrite(TFT_DC, HIGH);
+
+  // Reset
   digitalWrite(TFT_RST, LOW);
   delay(10);
   digitalWrite(TFT_RST, HIGH);
   delay(120);
 
-  tft.init();
-  tft.setRotation(1);
+  // ST7789 init sequence
+  SPI.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, TFT_CS);
+
+  raw_cmd(0x01);  delay(150);  // SWRESET
+  raw_cmd(0x11);  delay(150);  // SLPOUT
+  raw_cmd(0x36);  raw_data(0x00);  // MADCTL
+  raw_cmd(0x3A);  raw_data(0x55);  // COLMOD (16-bit)
+  raw_cmd(0x13);  delay(10);      // NORON
+  raw_cmd(0x29);  delay(10);      // DISPON
+
+  Serial.println("Manual ST7789 init done");
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1500);
+  Serial.println("\n=== Starting ===\n");
+
+  manual_st7789_init();
+
+  // 现在用 TFT_eSPI 画图（不调用 tft.init()）
+  Serial.println("Drawing with TFT_eSPI...");
+
   tft.fillScreen(TFT_RED);
   delay(1000);
+
   tft.fillScreen(TFT_GREEN);
   delay(1000);
+
   tft.fillScreen(TFT_BLUE);
   delay(1000);
+
   tft.fillScreen(TFT_BLACK);
   delay(500);
 
   // Demo
-  demoStartup();
-  delay(1500);
-  demoShapes();
-  delay(1500);
-  demoText();
-  delay(1500);
-  demoRainbowCircles();
-  delay(1500);
-  demoBouncingBall();
+  tft.setRotation(1);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.drawCentreString("ESP32-S3 + ST7789", 120, 80, 4);
+  tft.drawCentreString("Manual init works!", 120, 120, 2);
+  tft.drawCentreString("TFT_eSPI drawing OK", 120, 150, 2);
+
+  Serial.println("Setup complete");
 }
 
 void loop() {
-  static unsigned long lastUpdate = 0;
-  if (millis() - lastUpdate > 3000) {
-    lastUpdate = millis();
-    showSystemInfo();
-  }
-
-  static int dotAngle = 0;
-  dotAngle = (dotAngle + 4) % 360;
-  tft.drawPixel(
-    120 + 80 * cos(dotAngle * DEG_TO_RAD),
-    120 + 80 * sin(dotAngle * DEG_TO_RAD),
-    rainbow[(dotAngle / 10) % rainbowLen]
-  );
+  static unsigned long t = 0;
+  t++;
+  tft.drawPixel(random(240), random(240), random(65536));
   delay(10);
-}
-
-void demoStartup() {
-  for (int i = 0; i < 120; i += 4) {
-    tft.drawRect(120 - i, 120 - i, i * 2, i * 2, rainbow[(i / 4) % rainbowLen]);
-    delay(5);
-  }
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawCentreString("ESP32-S3N15R8", 120, 90, 4);
-  tft.drawCentreString("ST7789 Display", 120, 155, 2);
-}
-
-void demoShapes() {
-  tft.fillRect(10, 10, 100, 55, TFT_RED);
-  tft.fillRect(130, 10, 100, 55, TFT_GREEN);
-  tft.fillRect(10, 85, 100, 55, TFT_BLUE);
-  tft.fillRect(130, 85, 100, 55, TFT_YELLOW);
-  tft.fillCircle(60, 200, 25, TFT_MAGENTA);
-  tft.fillCircle(180, 200, 25, TFT_CYAN);
-  tft.fillTriangle(120, 10, 150, 65, 90, 65, TFT_ORANGE);
-}
-
-void demoText() {
-  tft.fillScreen(TFT_BLACK);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("Hello World!", 20, 20, 4);
-  tft.setTextColor(TFT_GREEN, TFT_BLACK);
-  tft.drawString("ESP32-S3", 20, 58, 4);
-  tft.setTextColor(TFT_YELLOW, TFT_BLACK);
-  tft.drawString("240x240", 20, 96, 4);
-  tft.setTextColor(TFT_CYAN, TFT_BLACK);
-  tft.drawString("ST7789", 20, 134, 4);
-  tft.setTextColor(TFT_MAGENTA, TFT_BLACK);
-  tft.drawString("16-bit Color", 20, 172, 2);
-}
-
-void demoRainbowCircles() {
-  for (int r = 100; r > 0; r -= 5) {
-    tft.drawCircle(120, 120, r, rainbow[(r / 5) % rainbowLen]);
-    delay(10);
-  }
-  for (int r = 100; r > 0; r -= 5) {
-    tft.fillCircle(120, 120, r, rainbow[(r / 5) % rainbowLen]);
-    delay(15);
-  }
-}
-
-void demoBouncingBall() {
-  int x = 120, y = 60, dx = 3, dy = 2;
-  for (int i = 0; i < 120; i++) {
-    tft.fillCircle(x, y, 8, TFT_BLACK);
-    x += dx;
-    y += dy;
-    if (x - 8 <= 0 || x + 8 >= 240) dx = -dx;
-    if (y - 8 <= 0 || y + 8 >= 240) dy = -dy;
-    tft.fillCircle(x, y, 8, rainbow[(x / 10 + y / 10) % rainbowLen]);
-    delay(15);
-  }
-}
-
-void showSystemInfo() {
-  tft.fillScreen(TFT_BLACK);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("System Info", 20, 15, 2);
-  tft.setTextColor(TFT_CYAN, TFT_BLACK);
-  tft.drawString("Chip: " + String(ESP.getChipModel()), 20, 45, 2);
-  tft.drawString("Rev:  v" + String(ESP.getChipRevision()), 20, 68, 2);
-  tft.drawString("Cores: " + String(ESP.getChipCores()), 20, 91, 2);
-  tft.setTextColor(TFT_GREEN, TFT_BLACK);
-  tft.drawString("Free Heap: " + String(ESP.getFreeHeap() / 1024) + " KB", 20, 125, 2);
-  tft.drawString("PSRAM: " + String(ESP.getPsramSize() / 1024 / 1024) + " MB", 20, 148, 2);
-  tft.drawString("Flash: " + String(ESP.getFlashChipSize() / (1024 * 1024)) + " MB", 20, 171, 2);
-  tft.setTextColor(TFT_YELLOW, TFT_BLACK);
-  tft.drawString("WiFi MAC: " + WiFi.macAddress(), 20, 205, 1);
 }
