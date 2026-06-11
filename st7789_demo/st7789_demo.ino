@@ -53,8 +53,7 @@ void setup() {
   digitalWrite(TFT_BL, HIGH);
   Serial.println("Backlight ON");
 
-  // 手动复位屏幕（有些模组需要 MCU 控制 RST）
-  Serial.println("Resetting display...");
+  // 手动复位屏幕
   pinMode(TFT_RST, OUTPUT);
   digitalWrite(TFT_RST, LOW);
   delay(10);
@@ -62,29 +61,28 @@ void setup() {
   delay(120);
   Serial.println("RST toggled");
 
-  // 初始化屏幕（分辨率由 tft_setup.h 的 TFT_WIDTH/TFT_HEIGHT 决定）
-  Serial.println("Calling tft.init()...");
+  // 初始化屏幕
   tft.init();
   Serial.println("tft.init() done");
 
   tft.setRotation(1);
   Serial.println("Rotation set");
 
-  // 先做一个纯色填充验证基本通信
-  Serial.println("Filling screen RED...");
+  // 纯色测试
+  Serial.println("RED...");
   tft.fillScreen(TFT_RED);
   delay(2000);
 
-  Serial.println("Filling screen GREEN...");
+  Serial.println("GREEN...");
   tft.fillScreen(TFT_GREEN);
   delay(2000);
 
-  Serial.println("Filling screen BLUE...");
+  Serial.println("BLUE...");
   tft.fillScreen(TFT_BLUE);
   delay(2000);
 
   tft.fillScreen(TFT_BLACK);
-  Serial.println("--- Startup done, starting demo ---\n");
+  Serial.println("--- Startup done ---\n");
 
   // --- 演示段落 ---
   demoStartup();
