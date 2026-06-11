@@ -1,0 +1,23 @@
+# Arduino IDE build artifacts
+build/
+*.o
+*.a
+*.elf
+*.bin
+*.hex
+
+# PlatformIO (if used)
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
