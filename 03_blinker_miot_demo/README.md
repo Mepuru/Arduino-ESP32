@@ -47,18 +47,11 @@ C:\Users\<你的用户名>\Documents\Arduino\libraries\blinker-library\
 #define BLINKER_AUTH "你的Blinker设备Secret Key"
 ```
 
-### 3. 获取 Blinken Secret Key
-
-1. 手机安装 **Blinker App**
-2. App 中点击右上角 **+** → **独立设备** → **网络接入**
-3. 选择 **阿里云**，复制生成的 **Secret Key**
-4. 填入 `config.h` 的 `BLINKER_AUTH`
-
-### 4. 编译上传
+### 3. 编译上传
 
 选择端口 → 编译上传。屏幕显示连接状态。
 
-### 5. 配置 App 界面
+### 4. 配置 App 界面
 
 1. 在 Blinker App 中打开设备
 2. 点底部 **编辑界面**（铅笔图标）
@@ -66,7 +59,7 @@ C:\Users\<你的用户名>\Documents\Arduino\libraries\blinker-library\
 4. 分别设置键名：`btn-power`、`btn-color`、`btn-demo`、`btn-reset`
 5. 保存退出
 
-### 6. 演示效果
+### 5. 演示效果
 
 | 按钮 | 键名 | 屏幕反应 |
 |------|------|---------|
